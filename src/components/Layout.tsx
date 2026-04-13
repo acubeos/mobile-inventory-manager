@@ -1,41 +1,47 @@
-import { type ReactNode } from 'react';
-import { BottomNav } from './BottomNav';
+import { Outlet, useNavigate } from 'react-router-dom';
+import BottomNav from './BottomNav';
 import { useStore } from '../store/useStore';
 import { LogOut, Book } from 'lucide-react';
 
-interface LayoutProps {
-  children: ReactNode;
-  title: string;
-}
-
-export const Layout = ({ children, title }: LayoutProps) => {
+const Layout = () => {
   const { user, logout } = useStore();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
-    <div className="flex flex-col min-h-screen pb-20">
-      <header className="sticky top-0 bg-white border-b border-gray-200 px-4 py-3 flex justify-between items-center z-40 max-w-[640px] mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <Book className="text-primary-600" size={24} />
-          <h1 className="text-lg font-bold text-gray-900 truncate">{title}</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-gray-900">{user?.username}</p>
-            <p className="text-xs text-gray-500">{user?.role}</p>
+    <div className="min-h-screen bg-gray-50 pb-20">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-md mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Book className="w-6 h-6 text-blue-600" />
+            <span className="font-bold text-lg">BookStore</span>
           </div>
-          <button
-            onClick={logout}
-            className="p-2 text-gray-500 hover:text-red-600 transition-colors"
-            aria-label="Logout"
-          >
-            <LogOut size={20} />
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="text-right">
+              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+              <p className="text-sm font-medium">{user?.username}</p>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="p-2 text-gray-500 hover:text-red-600"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
-      <main className="flex-1 px-4 py-6">
-        {children}
+      
+      <main className="max-w-md mx-auto px-4 py-6">
+        <Outlet />
       </main>
+
       <BottomNav />
     </div>
   );
 };
+
+export default Layout;
