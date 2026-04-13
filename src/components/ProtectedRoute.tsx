@@ -1,7 +1,7 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 
-export const ProtectedRoute = () => {
+const ProtectedRoute = () => {
   const user = useStore((state) => state.user);
 
   if (!user) {
@@ -10,3 +10,5 @@ export const ProtectedRoute = () => {
 
   return <Outlet />;
 };
+
+export default ProtectedRoute;

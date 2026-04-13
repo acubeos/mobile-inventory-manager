@@ -1,65 +1,108 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, Book, Customer, Sale, Role } from '../types';
 
-interface State {
-  user: User | null;
+export interface Book {
+  id: string;
+  title: string;
+  author: string;
+  price: number;
+  stock: number;
+  category: string;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  email: string;
+}
+
+export interface SaleItem {
+  bookId: string;
+  quantity: number;
+  priceAtSale: number;
+}
+
+export interface Sale {
+  id: string;
+  customerId: string | null;
+  items: SaleItem[];
+  totalAmount: number;
+  timestamp: number;
+  cashierId: string;
+}
+
+export interface User {
+  id: string;
+  username: string;
+  role: 'admin' | 'cashier';
+}
+
+interface StoreState {
   books: Book[];
   customers: Customer[];
   sales: Sale[];
-  login: (username: string, role: Role) => void;
+  user: User | null;
+  
+  // Auth
+  login: (username: string, role: 'admin' | 'cashier') => void;
   logout: () => void;
+  
+  // Books
   addBook: (book: Omit<Book, 'id'>) => void;
-  updateBook: (id: string, book: Partial<Book>) => void;
+  updateBook: (id: string, updates: Partial<Book>) => void;
   deleteBook: (id: string) => void;
-  addCustomer: (customer: Omit<Customer, 'id' | 'totalSpent'>) => void;
+  
+  // Customers
+  addCustomer: (customer: Omit<Customer, 'id'>) => void;
+  updateCustomer: (id: string, updates: Partial<Customer>) => void;
+  
+  // Sales
   addSale: (sale: Omit<Sale, 'id' | 'timestamp'>) => void;
 }
 
-const mockBooks: Book[] = [
-  { id: '1', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', isbn: '9780743273565', price: 5000, stock: 15, category: 'Fiction' },
-  { id: '2', title: 'Things Fall Apart', author: 'Chinua Achebe', isbn: '9780385474542', price: 4500, stock: 20, category: 'African Literature' },
-  { id: '3', title: 'Half of a Yellow Sun', author: 'Chimamanda Ngozi Adichie', isbn: '9780007200283', price: 6000, stock: 10, category: 'Contemporary Fiction' },
-];
-
-export const useStore = create<State>()(
+export const useStore = create<StoreState>()(
   persist(
     (set) => ({
-      user: null,
-      books: mockBooks,
-      customers: [],
+      books: [
+        { id: '1', title: 'The Lean Startup', author: 'Eric Ries', price: 5000, stock: 10, category: 'Business' },
+        { id: '2', title: 'Atomic Habits', author: 'James Clear', price: 4500, stock: 15, category: 'Self-help' },
+        { id: '3', title: 'Things Fall Apart', author: 'Chinua Achebe', price: 3000, stock: 20, category: 'Literature' },
+      ],
+      customers: [
+        { id: '1', name: 'John Doe', phone: '08012345678', email: 'john@example.com' },
+      ],
       sales: [],
+      user: null,
 
-      login: (username, role) => set({
-        user: { id: Math.random().toString(36).substr(2, 9), username, role }
-      }),
-
+      login: (username, role) => set({ user: { id: Math.random().toString(36).substr(2, 9), username, role } }),
       logout: () => set({ user: null }),
 
       addBook: (book) => set((state) => ({
         books: [...state.books, { ...book, id: Math.random().toString(36).substr(2, 9) }]
       })),
-
-      updateBook: (id, updatedBook) => set((state) => ({
-        books: state.books.map((b) => (b.id === id ? { ...b, ...updatedBook } : b))
+      updateBook: (id, updates) => set((state) => ({
+        books: state.books.map((b) => (b.id === id ? { ...b, ...updates } : b))
       })),
-
       deleteBook: (id) => set((state) => ({
         books: state.books.filter((b) => b.id !== id)
       })),
 
       addCustomer: (customer) => set((state) => ({
-        customers: [...state.customers, { ...customer, id: Math.random().toString(36).substr(2, 9), totalSpent: 0 }]
+        customers: [...state.customers, { ...customer, id: Math.random().toString(36).substr(2, 9) }]
+      })),
+      updateCustomer: (id, updates) => set((state) => ({
+        customers: state.customers.map((c) => (c.id === id ? { ...c, ...updates } : c))
       })),
 
       addSale: (sale) => set((state) => {
         const newSale = {
           ...sale,
-          id: `SALE-${Date.now()}`,
-          timestamp: new Date().toISOString()
+          id: Math.random().toString(36).substr(2, 9),
+          timestamp: Date.now(),
         };
-
-        // Update book stock
+        
+        // Update stock
         const updatedBooks = state.books.map(book => {
           const saleItem = sale.items.find(item => item.bookId === book.id);
           if (saleItem) {
@@ -68,18 +111,9 @@ export const useStore = create<State>()(
           return book;
         });
 
-        // Update customer total spent
-        const updatedCustomers = state.customers.map(customer => {
-          if (customer.id === sale.customerId) {
-            return { ...customer, totalSpent: customer.totalSpent + sale.totalAmount };
-          }
-          return customer;
-        });
-
         return {
           sales: [newSale, ...state.sales],
-          books: updatedBooks,
-          customers: updatedCustomers
+          books: updatedBooks
         };
       }),
     }),

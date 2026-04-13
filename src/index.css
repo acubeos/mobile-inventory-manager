@@ -3,33 +3,29 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   margin: 0;
-  display: flex;
-  place-content: center;
-  min-width: 320px;
-  min-height: 100vh;
   background-color: #f9fafb;
+  color: #111827;
 }
 
 #root {
-  width: 100%;
-  max-width: 640px; /* Mobile focused max width */
-  margin: 0 auto;
+  min-height: 100vh;
 }
 
-/* Touch targets */
-button, a {
-  min-height: 44px;
-  min-width: 44px;
+/* Improve touch feedback */
+button:active {
+  transform: scale(0.98);
+}
+
+/* Hide scrollbars for a cleaner mobile look but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
